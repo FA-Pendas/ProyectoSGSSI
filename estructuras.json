@@ -1,0 +1,31 @@
+{
+    "firmar-envio":{
+        "pauta": "Separado con un espacio",
+        "texto": "emisor receptor cantidad"
+    },
+
+    "transaccion":{
+        "time-stamp": 1357425863,
+        "emisor": "0x356435345",
+        "receptor": "0x356423345",
+        "cantidad": 23,
+        "firma": "0x356435345",
+        "clave-publica": "0x356435345"
+    },
+
+    "bloque":{
+        "hash": "0x356435345",
+        "time-stamp": 1357425863,
+        "transacciones": ["0x35643534","0xf345345"]
+    }
+
+
+
+
+
+
+
+
+
+
+}
