@@ -14,9 +14,13 @@
     },
 
     "bloque":{
-        "hash": "0x356435345",
+        "indice": 1,
+        "transacciones": ["0x35643534","0xf345345"],
+        "dificultad": 3,
+        "hash-anterior": "0x356435345",
         "time-stamp": 1357425863,
-        "transacciones": ["0x35643534","0xf345345"]
+        "nonce": 0,
+        "hash": "0x356435345"
     }
 
 
