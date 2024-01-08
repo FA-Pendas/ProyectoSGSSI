@@ -17,7 +17,8 @@
 # print(f"{emisor} {receptor} {cantidad}")
 
 
-import time
-print(time.time())
-time.sleep(1)
-print(time.time())
+# import time
+# print(time.time())
+# time.sleep(1)
+# print(time.time())
+

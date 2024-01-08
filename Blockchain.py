@@ -15,7 +15,7 @@ class Blockchain():
         self.cadenaDeBloques = [] # Lista de hashes de bloques
         self.trasacciones = {} # Diccionario de transacciones existentes {hash:transaccion}
         self.trasaccionesNoQuemadas = {} # Diccionario de transacciones no quemadas {hash:transaccion} 
-        self.mempool = [] # Lista de transacciones pendientes
+        self.mempool = [] # Lista de listas de transacciones pendientes
         self.nodos = set() # Conjunto de nodos conectados
 
     def hola(self):
@@ -68,10 +68,14 @@ class Blockchain():
             "clave-publica": public_key_from_str
         }
 
-    def anadir_transaccion(self, transaccion):
-        # Añadir la transacción al mempool
-        self.mempool.append(transaccion)
-        #TODO: Cuando se añada a la cadena, quitarla del mempool y hacerle el hash en modo string para que el hash sea la clave en el diccionario de transacciones
+    # TODO: SE AÑADEN MAS DE UNA TRANSACCION A LA VEZ (son dependientes entre ellas)
+    # TODO: Que en la mempool haya listas con transacciones que se tienen que minar juntas
+    def anadir_transaccion(self, transaccion, transaccionesAQuemar):
+        # Transacciones a quemar es una lista de transacciones que se van a quemar en esta transaccion
+        # El sobrante se le pasara a la direccion del emisor
+        if self.validar_transaccion(transaccion):
+            self.mempool.append(transaccion)
+            #TODO: Cuando se añada a la cadena, quitarla del mempool y hacerle el hash en modo string para que el hash sea la clave en el diccionario de transacciones
 
     def obtener_hash_de_transaccion(self, transaccion):
         return self.hash(str(transaccion))
@@ -83,7 +87,7 @@ class Blockchain():
         # Crear un bloque
         # añadir todas las transacciones del mempool al bloque (todavia no borrarlas del mempool)
         transacciones = []
-        for i in self.mempool:
+        for i in self.mempool: # En la mempool solo hay transacciones validas
             transacciones.append(self.obtener_hash_de_transaccion(i))
 
         bloque = {
@@ -109,15 +113,38 @@ class Blockchain():
         # Aplica el algoitmo sha256 a un string puede ser (clave publica, bloque, transaccion)
         return hashlib.sha256(string.encode('utf-8')).hexdigest()
 
-    def validar_transaccion(self, transaccion):
+    def validar_transaccion(self, transaccion, esHash=False):
 
-        #PASAR LOS str DE LA TRANSACCION A SIGNATURE Y PUBLIC_KEY
-        #MIRAR SI LA FIRMA COINCIDE A ESA PUBLIC_KEY
+        if esHash:
+            transaccion = self.trasacciones[transaccion]
+        
+        mensaje = self.crear_mensaje(transaccion.emisor, transaccion.receptor, transaccion.cantidad)
+        
+        clave_publica = serialization.load_pem_public_key(
+            transaccion["clave-publica"].encode('utf-8'),
+            backend=default_backend()
+        )
 
-        # Validar la transacción
-        # Si es válida, agregarla al mempool
-        # Si no es válida, descartarla
-        self.mempool.append(transaccion)
+        firma = base64.b64decode(transaccion.firma)
+
+        esValida = True
+
+        try:
+            clave_publica.verify(
+                firma,
+                mensaje,
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA256()
+            )
+            print("La firma es válida.")
+        except InvalidSignature:
+            esValida = False
+            print("La firma no es válida.")
+        
+        return esValida
 
     def validar_bloque(self, bloque, hash_anterior):
         valido = True
@@ -126,7 +153,7 @@ class Blockchain():
         if bloque.hash != self.calcular_hash(bloque):
             valido = False
         for transaccion in bloque.transacciones:
-            if not self.validar_transaccion(transaccion):
+            if not self.validar_transaccion(self.transacciones[transaccion]):
                 valido = False
                 break
         # CALCULAR EL HASH DEL BLOQUE Y COMPARAR QUE SOBREPASA LA DIFICULTAD
@@ -147,7 +174,7 @@ class Blockchain():
     def agregar_nodo(self, ipNodo):
         self.nodos.add(ipNodo)
 
-    def agregar_transaccion(self, transaccion):
+    def agregar_transaccion(self, transaccion):#TODO: Borrar esta funcion
         if self.validar_transaccion(transaccion):
             self.mempool.append(transaccion)
         else:
