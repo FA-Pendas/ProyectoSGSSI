@@ -13,6 +13,13 @@
         "clave-publica": "0x356435345"
     },
 
+    "transaccion_sobra":{
+        "time-stamp": 1357425863,
+        "emisor": "0x356435345",
+        "receptor": "0x356423345",
+        "cantidad": 23
+    },
+
     "bloque":{
         "indice": 1,
         "transacciones": ["0x35643534","0xf345345"],
@@ -21,9 +28,14 @@
         "time-stamp": 1357425863,
         "nonce": 0,
         "hash": "0x356435345"
+    },
+
+    "transaccion_realizada":
+    {
+        "enviado_transaccion": "0x124",
+        "sobras_transaccion": "0x124",
+        "comision_transaccion": "0x124"
     }
-
-
 
 
 
