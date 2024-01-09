@@ -16,8 +16,8 @@
     "transaccion_sobra":{
         "time-stamp": 1357425863,
         "emisor": "0x356435345",
-        "receptor": "0x356423345",
-        "cantidad": 23
+        "cantidad": 23,
+        "receptor": "0x356423345"
     },
 
     "bloque":{
@@ -32,9 +32,14 @@
 
     "transaccion_realizada":
     {
-        "enviado_transaccion": "0x124",
-        "sobras_transaccion": "0x124",
-        "comision_transaccion": "0x124"
+        "enviado": "0x124",
+        "sobras": "0x124",
+        "comision": "0x124",
+        "transaccionesQuemadas":[
+            "0x124",
+            "0x124",
+            "0x124"
+        ]
     }
 
 
