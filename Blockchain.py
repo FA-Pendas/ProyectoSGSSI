@@ -32,7 +32,7 @@ class Blockchain():
 
     # a = a>>4 Desplazar 4 bits a la derecha
 
-    def __init__(self, puerto = 5000, direccion = "0x0000000000000000000000000000000000000000000000000000000000000000", recompensaInicial = 100, cadaCuantoReducir = 10) -> None:#VERSION1.2
+    def __init__(self, puerto = 5000, direccion = "0000000000000000000000000000000000000000000000000000000000000000", recompensaInicial = 100, cadaCuantoReducir = 10, dificultadInicial = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff") -> None:#VERSION1.2
         
         self.DETENERHILO = False # Solo usar para acabar con el hilo
 
@@ -41,6 +41,7 @@ class Blockchain():
         
         self.recompensaInicial = recompensaInicial # Recompensa inicial de cada bloque
         self.cadaCuantoReducir = cadaCuantoReducir # Cada cuanto se reduce la recompensa a la mitad
+        self.dificultadInicial = dificultadInicial # Dificultad inicial 0x00000fff...ff
 
         self.direccion = direccion # Direccion del nodo
 
@@ -113,9 +114,9 @@ class Blockchain():
 
     def bloqueGenesis(self):
         #El bloque genesis no tiene transacciones
-        dificultad = "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" #0x00000fff...ff
+        dificultad = self.dificultadInicial #0x00000fff...ff
         indice = 0
-        hash_anterior = "0x0000000000000000000000000000000000000000000000000000000000000000"
+        hash_anterior = "0000000000000000000000000000000000000000000000000000000000000000"
         timeStamp = int(time.time())
 
         tc = self.crear_una_transaccion_comision(timeStamp,hash_anterior,self.recompensaInicial)#Coloco el hash anterior porque es todo 0s
@@ -135,17 +136,17 @@ class Blockchain():
             "dificultad": dificultad,
             "hash-anterior": hash_anterior
         }#Le falta el nonce y el hash
-
     
     def validar_bloque_genesis(self, bloque):#VERSION1.2
         return bloque["indice"] == 0 and \
-                bloque["dificultad"] == "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" and \
-                bloque["hash-anteriror"] == "0x0000000000000000000000000000000000000000000000000000000000000000" and \
+                bloque["dificultad"] == self.dificultadInicial and \
+                bloque["hash-anterior"] == "0000000000000000000000000000000000000000000000000000000000000000" and \
                 "time-stamp" in bloque and \
                 "nonce" in bloque and \
                 len(bloque) == 6 and \
                 "transacciones" in bloque and \
-                self.comprobar_prueba_de_trabajo(self.obtener_hash_de_bloque(), bloque["dificultad"])
+                self.comprobar_prueba_de_trabajo(self.obtener_hash_de_bloque(bloque), bloque["dificultad"]) and \
+                self.trasacciones[self.trasaccionesDeEnvio[bloque["transacciones"][0]]["coinbase"]]["cantidad"] == self.recompensaInicial
 
     def hola(self):
         print("Hola")
@@ -384,8 +385,8 @@ class Blockchain():
 
         indice = self.ultimo_bloque()["indice"] + 1
 
-        tc = self.crear_una_transaccion_comision(int(time.time()), "0x0000000000000000000000000000000000000000000000000000000000000000" \
-                                                 ,self.recompensa_bloque(indice))#Coloco el hash anterior porque es todo 0s
+        tc = self.crear_una_transaccion_comision(int(time.time()), "0000000000000000000000000000000000000000000000000000000000000000" \
+                                                 ,self.recompensa_bloque(indice))
         tc["receptor"] = self.direccion
         hashTC = self.obtener_hash_de_transaccion(tc)
         self.trasacciones[hashTC] = tc
@@ -456,7 +457,7 @@ class Blockchain():
                     "time-stamp" in transaccion) and \
                     "emisor" in transaccion) and \
                     transaccion["cantidad"] == coinbase) and \
-                    transaccion["emisor"] == "0x0000000000000000000000000000000000000000000000000000000000000000")
+                    transaccion["emisor"] == "0000000000000000000000000000000000000000000000000000000000000000")
 
         if esComision: #Si es comision, no se tiene que comprobar la firma
             return (((len(transaccion) >= 3 and \
@@ -517,6 +518,26 @@ class Blockchain():
                 #TODO
                 if taux.status_code == 200:#TODO: COMPROBAR QUE SIEMPRE QUE ES CORRECTO DEVUELVE 200, ¿COMPROBAR QUE ES MENOR QUE 400?
                     self.trasaccionesDeEnvio[t] = taux.json()
+                    for i in self.trasaccionesDeEnvio[t]:
+                        if not i == "transaccionesQuemadas":
+                            if not self.trasaccionesDeEnvio[t][i] in self.trasacciones:
+                                aux = bloqueConHash["propagador"]
+                                tt = self.trasaccionesDeEnvio[t][i]
+                                taux = requests.get(f"http://{aux}/obtener_transaccion?t={tt}")
+                                if taux.status_code == 200:
+                                    self.trasacciones[self.trasaccionesDeEnvio[t][i]] = taux.json()
+                                    self.trasaccionesNoQuemadas[self.trasaccionesDeEnvio[t][i]] = self.trasacciones[self.trasaccionesDeEnvio[t][i]]
+
+                    if "transaccionesQuemadas" in self.trasaccionesDeEnvio[t]:
+                        for i in self.trasaccionesDeEnvio[t]["transaccionesQuemadas"]:
+                            if not self.trasaccionesDeEnvio[t][i] in self.trasacciones:
+                                aux = bloqueConHash["propagador"]
+                                tt = self.trasaccionesDeEnvio[t][i]
+                                taux = requests.get(f"http://{aux}/obtener_transaccion?t={tt}")
+                                if taux.status_code == 200:
+                                    self.trasacciones[self.trasaccionesDeEnvio[t][i]] = taux.json()
+                                    self.trasaccionesNoQuemadas[self.trasaccionesDeEnvio[t][i]] = self.trasacciones[self.trasaccionesDeEnvio[t][i]]
+
                 else:
                     return False
             recompensa = self.recompensa_bloque(bloque["indice"])
@@ -544,6 +565,7 @@ class Blockchain():
         return self.hash(str(bloque))
 
     def agregar_nodo(self, ipNodo):#VERSION1.2
+        # ipNodo = "localhost:5000"
         self.nodos.add(ipNodo)
         return self.nodos
 
@@ -576,7 +598,7 @@ class Blockchain():
         esto es por si el ultimo bloque es el 10, 20, 30, etc.
         """
         if self.bloques[cadenaDeBloques[-1]]["indice"] <= 9:
-            return self.bloques[cadenaDeBloques[-1]]["dificultad"] == "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" #0x00000fff...ff
+            return self.bloques[cadenaDeBloques[-1]]["dificultad"] == self.dificultadInicial #0x00000fff...ff
         elif len(cadenaDeBloques) < 11:
             return False
         else:
@@ -609,7 +631,11 @@ class Blockchain():
             aux = cadenaConPropagador["propagador"]
             baux = requests.get(f"http://{aux}/obtener_bloque?b={cadena[0]}") #TODO: HACER UNA PETICION AL NODO PARA QUE NOS DE LA TRANSACCION
             if baux.status_code == 200:#TODO: COMPROBAR QUE SIEMPRE QUE ES CORRECTO DEVUELVE 200, ¿COMPROBAR QUE ES MENOR QUE 400?
-                self.bloques[cadena[0]] = baux.json()
+                a = baux.json()
+                if a:
+                    self.bloques[cadena[0]] = a
+                else:
+                    return False
             else:
                 return False
         if not self.validar_bloque_genesis(self.bloques[cadena[0]]):
@@ -620,7 +646,11 @@ class Blockchain():
                 aux = cadenaConPropagador["propagador"]
                 baux = requests.get(f"http://{aux}/obtener_bloque?b={cadena[i]}") #TODO: HACER UNA PETICION AL NODO PARA QUE NOS DE LA TRANSACCION
                 if baux.status_code == 200:#TODO: COMPROBAR QUE SIEMPRE QUE ES CORRECTO DEVUELVE 200, ¿COMPROBAR QUE ES MENOR QUE 400?
-                    self.bloques[cadena[i]] = baux.json()
+                    a = baux.json()
+                    if a:
+                        self.bloques[cadena[i]] = a
+                    else:
+                        return False
                 else:
                     return False
             if not self.validar_bloque({"bloque":self.bloques[cadena[i]], "hash": cadena[i]}, cadena[i-1]["hash"]):
@@ -646,7 +676,7 @@ class Blockchain():
         cambiados, noCambiados = 0, 0
         for nodo in self.nodos:
             # Enviar la cadena a todos los nodos
-            x = requests.post(f"http://{nodo}/reemplazar_cadena", json = {"cadena":self.cadenaDeBloques, "propagador":"localhost:"+self.puerto}) #¿Provisional lo de localHost?
+            x = requests.post(f"http://{nodo}/reemplazar_cadena", json = {"cadena":self.cadenaDeBloques, "propagador":"localhost:"+str(self.puerto)}) #¿Provisional lo de localHost?
             if x.status_code == 200 and x.text == "True":
                 cambiados += 1
             elif x.status_code == 200 and x.text == "False":

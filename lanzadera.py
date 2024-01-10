@@ -42,18 +42,18 @@ def reemplazar_cadena():
 @app.route("/obtener_transaccion_de_envio" , methods=['GET'])
 def obtener_transaccion_de_envio():
     t = request.args.get('t')
-    return minero.obtener_transaccion_de_envio(t)
+    return minero.obtener_info_transaccion_envio(t), 200
 
 @app.route("/obtener_bloque" , methods=['GET'])
 def obtener_bloque():
     b = request.args.get('b')
-    return minero.obtener_bloque(b)
+    return minero.obtener_info_bloque(b), 200
 
 @app.route("/obtener_transaccion" , methods=['GET'])
 def obtener_transaccion():
     pass #PRIMERO MIRAR QUE HACER EN LA CLASE
-    # t = request.args.get('t')
-    # return minero.obtener_transaccion(t)
+    t = request.args.get('t')
+    return minero.obtener_info_transaccion(t), 200
 
 
 
