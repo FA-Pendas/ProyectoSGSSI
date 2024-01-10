@@ -27,10 +27,22 @@
         "hash-anterior": "0x356435345",
         "time-stamp": 1357425863,
         "nonce": 0,
-        "hash": "0x356435345"
+        "hash": "0x356435345 TODO: ESTO IGUAL QUITAR DE AQUI"
     },
 
-    "transaccion_realizada":
+    "bloqueConHash":{
+        "bloque":{
+            "indice": 1,
+            "transacciones": ["0x35643534","0xf345345"],
+            "dificultad": 3,
+            "hash-anterior": "0x356435345",
+            "time-stamp": 1357425863,
+            "nonce": 0
+            },
+        "hash": "0x356435345",
+        "propagador": "ipNodo"},
+
+    "transaccion_de_envio":
     {
         "enviado": "0x124",
         "sobras": "0x124",

@@ -118,18 +118,55 @@
 # for i in range(100):
 #     print(time.time())
 
-a = "0x" + "f"*64
+# a = "0x" + "f"*64
 
-print(a)
+# print(a)
 
-a = int(a, 16)>>4
+# a = int(a, 16)>>4
 
-print(a)
+# print(a)
 
-a = hex(a)
+# a = hex(a)
 
-print(a)
+# print(a)
 
-a = int(a, 16)
+# a = int(a, 16)
 
-print(a)
+# print(a)
+
+# from copy import deepcopy
+
+# a = {1: 2, 3: 4, 5: 6}
+# b = {1: 2, 3: 4, 5: 6}
+
+# b[1] = a
+# a[3] = 534
+
+# print(b)
+
+# print(str("asd"))
+
+# c = deepcopy(b)
+# a[3] = 534414
+# print(b)
+# print(c)
+
+# import requests
+
+# a = requests.get("http://localhost:5000/chain")
+# a = a.status_code
+# print(a)
+
+# print("a")
+
+# print("0x"+"f"*60)
+
+# a = ["sad"]*10
+# print(int(-3))
+
+# print(a[:-5])
+
+# for i in range(20):
+#     print(i-11,i)
+
+print("0x" + "0"*64)
