@@ -26,20 +26,7 @@ signature = private_key.sign(
     hashes.SHA256()
 )
 
-# Verifica la firma con la clave pública
-try:
-    public_key.verify(
-        signature,
-        message,
-        padding.PSS(
-            mgf=padding.MGF1(hashes.SHA256()),
-            salt_length=padding.PSS.MAX_LENGTH
-        ),
-        hashes.SHA256()
-    )
-    print("La firma es válida.")
-except InvalidSignature:
-    print("La firma no es válida.")
+
 
 print(base64.b64encode(signature).decode('utf-8'))
 print(public_key.public_bytes(encoding="utf-8", format="PEM"))

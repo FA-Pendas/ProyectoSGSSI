@@ -1,1 +1,5 @@
+Windows:
 pip install -r .\requirements.txt
+
+Linux:
+pip install -r ./requirements.txt
